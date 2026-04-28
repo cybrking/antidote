@@ -32,6 +32,13 @@ What does the attacker gain? JSON only — no markdown:
 {{"blast_radius_score": <1-10>, "control_summary": "plain English", "kill_chain": ["step1", "step2"]}}"""
 
 
+def _parse_json_response(text: str) -> dict:
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1]
+        text = text.rsplit("```", 1)[0]
+    return json.loads(text.strip())
+
+
 def _build_vuln_prompt(tool: ToolManifest) -> str:
     return _VULN_TEMPLATE.format(
         tool_id=tool.tool_id,
@@ -50,7 +57,7 @@ def analyze_tool(client: anthropic.Anthropic, tool: ToolManifest) -> ToolFinding
                 max_tokens=512,
                 messages=[{"role": "user", "content": prompt}],
             )
-            result = json.loads(response.content[0].text)
+            result = _parse_json_response(response.content[0].text)
             if not result.get("has_finding"):
                 return None
             _VALID_SEVERITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
@@ -97,7 +104,7 @@ def analyze_propagation(
                 max_tokens=512,
                 messages=[{"role": "user", "content": prompt}],
             )
-            result = json.loads(response.content[0].text)
+            result = _parse_json_response(response.content[0].text)
             return PropagationPath(
                 entry_point=entry.tool_id,
                 reachable_tools=[t.tool_id for t in downstream],
