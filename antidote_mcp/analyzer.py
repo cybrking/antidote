@@ -12,6 +12,12 @@ Inferred Permissions: {permissions}
 
 Check for one of: injection_surface, permission_scope, tool_poisoning, description_anomaly.
 
+Severity rubric — apply exactly:
+CRITICAL: active exploit payload present (prompt injection text, exfiltration instruction, override directive)
+HIGH: unconstrained string param with dangerous permission (filesystem/network/secrets) OR description contradicts schema
+MEDIUM: overly broad permission scope with no active exploit vector OR vague description with ambiguous intent
+LOW: minor anomaly, no realistic exploit path
+
 JSON only — no markdown:
 {{"has_finding": true, "severity": "CRITICAL|HIGH|MEDIUM|LOW", "vuln_type": "...", \
 "description": "one sentence", "evidence": "exact triggering text"}}
@@ -55,6 +61,7 @@ def analyze_tool(client: anthropic.Anthropic, tool: ToolManifest) -> ToolFinding
             response = client.messages.create(
                 model="claude-haiku-4-5-20251001",
                 max_tokens=512,
+                temperature=0,
                 messages=[{"role": "user", "content": prompt}],
             )
             result = _parse_json_response(response.content[0].text)
@@ -102,6 +109,7 @@ def analyze_propagation(
             response = client.messages.create(
                 model="claude-sonnet-4-6",
                 max_tokens=512,
+                temperature=0,
                 messages=[{"role": "user", "content": prompt}],
             )
             result = _parse_json_response(response.content[0].text)

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
-from mcp_scan.models import ToolFinding, PropagationPath
-from mcp_scan.reporter import write_json, write_markdown
+from antidote_mcp.models import ToolFinding, PropagationPath
+from antidote_mcp.reporter import write_json, write_markdown
 
 
 def _finding() -> ToolFinding:

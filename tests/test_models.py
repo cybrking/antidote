@@ -1,4 +1,4 @@
-from mcp_scan.models import MCPServer, ToolManifest, ToolFinding, PropagationPath
+from antidote_mcp.models import MCPServer, ToolManifest, ToolFinding, PropagationPath
 from pathlib import Path
 
 

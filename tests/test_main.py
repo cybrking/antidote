@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
-from mcp_scan.models import ToolManifest, ToolFinding, PropagationPath
-from mcp_scan.main import _run
+from antidote_mcp.models import ToolManifest, ToolFinding, PropagationPath
+from antidote_mcp.main import _run
 
 
 @pytest.fixture
@@ -30,11 +30,11 @@ async def test_run_writes_output(tmp_path, two_tools, monkeypatch):
     prop = PropagationPath(entry_point="s/risky", reachable_tools=["s/downstream"],
                            blast_radius_score=6, control_summary="Controls fs",
                            kill_chain=["step1"])
-    with patch("mcp_scan.main.discover", return_value=[MagicMock(name="s")]), \
-         patch("mcp_scan.main.fetch_all_tools", new_callable=AsyncMock, return_value=two_tools), \
-         patch("mcp_scan.main.analyze_tool", return_value=finding), \
-         patch("mcp_scan.main.analyze_propagation", return_value=prop), \
-         patch("mcp_scan.main.print_findings"):
+    with patch("antidote_mcp.main.discover", return_value=[MagicMock(name="s")]), \
+         patch("antidote_mcp.main.fetch_all_tools", new_callable=AsyncMock, return_value=two_tools), \
+         patch("antidote_mcp.main.analyze_tool", return_value=finding), \
+         patch("antidote_mcp.main.analyze_propagation", return_value=prop), \
+         patch("antidote_mcp.main.print_findings"):
         await _run()
     assert (tmp_path / "findings.json").exists()
     assert (tmp_path / "report.md").exists()
@@ -45,5 +45,5 @@ async def test_run_writes_output(tmp_path, two_tools, monkeypatch):
 @pytest.mark.asyncio
 async def test_run_no_servers_exits_cleanly(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    with patch("mcp_scan.main.discover", return_value=[]):
+    with patch("antidote_mcp.main.discover", return_value=[]):
         await _run()

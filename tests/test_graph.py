@@ -1,5 +1,5 @@
-from mcp_scan.models import ToolManifest
-from mcp_scan.graph import build_graph, get_reachable_tools
+from antidote_mcp.models import ToolManifest
+from antidote_mcp.graph import build_graph, get_reachable_tools
 
 
 def _tool(server: str, name: str, description: str = "", schema: dict | None = None, perms: list | None = None) -> ToolManifest:

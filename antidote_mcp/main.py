@@ -8,6 +8,7 @@ from .parser import fetch_all_tools
 from .graph import build_graph, get_reachable_tools
 from .analyzer import analyze_tool, analyze_propagation
 from .reporter import print_findings, write_json, write_markdown
+from .cache import load_cache, save_cache, get_cached_finding, cache_finding, is_cached
 
 
 def main() -> None:
@@ -37,7 +38,21 @@ async def _run() -> None:
         console.print("[red]Error: ANTHROPIC_API_KEY environment variable not set.[/red]")
         return
     client = anthropic.Anthropic(api_key=api_key)
-    findings = [f for t in tools if (f := analyze_tool(client, t)) is not None]
+    cache = load_cache()
+    findings = []
+    cache_hits = 0
+    for t in tools:
+        if is_cached(cache, t):
+            finding = get_cached_finding(cache, t)
+            cache_hits += 1
+        else:
+            finding = analyze_tool(client, t)
+            cache_finding(cache, t, finding)
+        if finding is not None:
+            findings.append(finding)
+    save_cache(cache)
+    if cache_hits:
+        console.print(f"  {cache_hits} tool(s) loaded from cache.")
     high_risk = {f.tool_id for f in findings if f.severity in ("HIGH", "CRITICAL")}
     paths = []
     if high_risk:

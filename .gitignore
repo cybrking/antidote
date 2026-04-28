@@ -6,3 +6,4 @@ dist/
 .env
 findings.json
 report.md
+.mcp-scan-cache.json

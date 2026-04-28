@@ -1,8 +1,8 @@
 import json
 import pytest
 from unittest.mock import MagicMock
-from mcp_scan.models import ToolManifest, ToolFinding, PropagationPath
-from mcp_scan.analyzer import analyze_tool, analyze_propagation, _build_vuln_prompt
+from antidote_mcp.models import ToolManifest, ToolFinding, PropagationPath
+from antidote_mcp.analyzer import analyze_tool, analyze_propagation, _build_vuln_prompt
 
 
 def _tool(name: str, description: str, perms: list | None = None) -> ToolManifest:

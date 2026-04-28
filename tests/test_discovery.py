@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from mcp_scan.discovery import discover, _parse_config
+from antidote_mcp.discovery import discover, _parse_config
 
 
 def test_parse_config_stdio(tmp_path):

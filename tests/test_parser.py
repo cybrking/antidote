@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock, patch
 from pathlib import Path
-from mcp_scan.models import MCPServer
-from mcp_scan.parser import _infer_permissions, fetch_all_tools
+from antidote_mcp.models import MCPServer
+from antidote_mcp.parser import _infer_permissions, fetch_all_tools
 
 
 def test_infer_permissions_filesystem_read():
@@ -39,6 +39,6 @@ async def test_fetch_all_tools_server_offline():
         name="offline", source=Path("/tmp/cfg.json"),
         transport="stdio", command="nonexistent_cmd", args=[]
     )
-    with patch("mcp_scan.parser._fetch_tools_stdio", new_callable=AsyncMock, return_value=[]):
+    with patch("antidote_mcp.parser._fetch_tools_stdio", new_callable=AsyncMock, return_value=[]):
         tools = await fetch_all_tools([server])
     assert tools == []
