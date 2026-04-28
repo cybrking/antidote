@@ -58,6 +58,15 @@ def test_analyze_propagation_returns_path():
         _tool("writer", "Writes data", perms=["filesystem.write"]),
         [_tool("reader", "Reads data", perms=["filesystem.read"])],
     )
+    assert path is not None
     assert path.blast_radius_score == 7
     assert path.entry_point == "s/writer"
     assert "s/reader" in path.reachable_tools
+
+
+def test_analyze_propagation_api_error_returns_none():
+    client = MagicMock()
+    client.messages.create.side_effect = Exception("timeout")
+    result = analyze_propagation(client, _tool("any", "desc"), [])
+    assert result is None
+    assert client.messages.create.call_count == 2

@@ -75,7 +75,7 @@ def analyze_propagation(
     client: anthropic.Anthropic,
     entry: ToolManifest,
     downstream: list[ToolManifest],
-) -> PropagationPath:
+) -> PropagationPath | None:
     downstream_text = "\n".join(
         f"- {t.tool_id}: {t.description[:120]} (permissions: {t.inferred_permissions})"
         for t in downstream
@@ -86,16 +86,22 @@ def analyze_propagation(
         entry_permissions=entry.inferred_permissions,
         downstream=downstream_text,
     )
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=512,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    result = json.loads(response.content[0].text)
-    return PropagationPath(
-        entry_point=entry.tool_id,
-        reachable_tools=[t.tool_id for t in downstream],
-        blast_radius_score=result["blast_radius_score"],
-        control_summary=result["control_summary"],
-        kill_chain=result["kill_chain"],
-    )
+    for attempt in range(2):
+        try:
+            response = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=512,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            result = json.loads(response.content[0].text)
+            return PropagationPath(
+                entry_point=entry.tool_id,
+                reachable_tools=[t.tool_id for t in downstream],
+                blast_radius_score=result["blast_radius_score"],
+                control_summary=result["control_summary"],
+                kill_chain=result["kill_chain"],
+            )
+        except Exception:
+            if attempt == 1:
+                return None
+    return None
