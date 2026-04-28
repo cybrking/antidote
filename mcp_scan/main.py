@@ -52,3 +52,7 @@ async def _run() -> None:
     write_json(findings, paths, Path("findings.json"))
     write_markdown(findings, paths, Path("report.md"))
     console.print("\n[green]Wrote findings.json and report.md[/green]")
+
+
+if __name__ == "__main__":
+    main()
