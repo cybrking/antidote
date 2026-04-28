@@ -36,6 +36,7 @@ antidote
 ```
 
 Antidote auto-discovers MCP configs from:
+
 - `~/Library/Application Support/Claude/claude_desktop_config.json` (Claude Desktop)
 - `~/.claude/claude_desktop_config.json` (Claude Code)
 - `.claude/settings.json` and `mcp.json` in the current directory
@@ -46,7 +47,7 @@ Output: terminal findings table + `findings.json` + `report.md` with a Mermaid d
 
 ## Example output
 
-```
+```text
 ╭──────────┬───────────────────────┬───────────────────┬───────────────────────╮
 │ Severity │ Tool                  │ Type              │ Evidence              │
 ├──────────┼───────────────────────┼───────────────────┼───────────────────────┤
@@ -68,6 +69,18 @@ Propagation Paths:
   accessible to the MCP runtime and exfiltrate them to an arbitrary external
   endpoint. Because the tool has both 'secrets.read' and 'network.outbound'
   permissions, the full attack is self-contained.
+```
+
+### Propagation graph
+
+```mermaid
+graph TD
+    filesystem_read_file["filesystem/read_file<br/>CRITICAL: tool_poisoning"]
+    network_http_post["network/http_post<br/>CRITICAL: injection_surface"]
+    filesystem_write_file["filesystem/write_file<br/>HIGH: injection_surface"]
+
+    filesystem_read_file --> filesystem_write_file
+    network_http_post --> filesystem_read_file
 ```
 
 ---
