@@ -53,12 +53,16 @@ def analyze_tool(client: anthropic.Anthropic, tool: ToolManifest) -> ToolFinding
             result = json.loads(response.content[0].text)
             if not result.get("has_finding"):
                 return None
+            _VALID_SEVERITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
+            severity = result.get("severity", "LOW").upper()
+            if severity not in _VALID_SEVERITIES:
+                severity = "LOW"
             return ToolFinding(
                 tool_id=tool.tool_id,
-                severity=result["severity"],
-                vuln_type=result["vuln_type"],
-                description=result["description"],
-                evidence=result["evidence"],
+                severity=severity,
+                vuln_type=result.get("vuln_type", "description_anomaly"),
+                description=result.get("description", ""),
+                evidence=result.get("evidence", ""),
             )
         except Exception:
             if attempt == 1:

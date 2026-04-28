@@ -1,4 +1,5 @@
 import json
+import re
 from dataclasses import asdict
 from pathlib import Path
 from rich.console import Console
@@ -53,10 +54,13 @@ def write_markdown(findings: list[ToolFinding], paths: list[PropagationPath], ou
                       f"**Evidence:** `{f.evidence}`\n"]
     if paths:
         lines += ["## Propagation Graph\n", "```mermaid", "graph TD"]
+        def _mermaid_id(tool_id: str) -> str:
+            return re.sub(r'[^a-zA-Z0-9_]', '_', tool_id)
+
         for p in paths:
-            en = p.entry_point.replace("/", "_")
+            en = _mermaid_id(p.entry_point)
             for d in p.reachable_tools:
-                lines.append(f"  {en} --> {d.replace('/', '_')}")
+                lines.append(f"  {en} --> {_mermaid_id(d)}")
         lines.append("```\n")
         for p in paths:
             lines += [f"### {p.entry_point} (blast radius: {p.blast_radius_score}/10)",

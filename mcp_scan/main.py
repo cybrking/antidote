@@ -32,7 +32,11 @@ async def _run() -> None:
     graph = build_graph(tools)
     tool_map = {t.tool_id: t for t in tools}
     console.print("Pass 1: vulnerability scan...")
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        console.print("[red]Error: ANTHROPIC_API_KEY environment variable not set.[/red]")
+        return
+    client = anthropic.Anthropic(api_key=api_key)
     findings = [f for t in tools if (f := analyze_tool(client, t)) is not None]
     high_risk = {f.tool_id for f in findings if f.severity in ("HIGH", "CRITICAL")}
     paths = []
