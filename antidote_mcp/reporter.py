@@ -5,7 +5,8 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from rich import box
-from .models import ToolFinding, PropagationPath
+from .models import ToolFinding, PropagationPath, ToolManifest
+from .html_report import write_html
 
 _ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 _COLORS = {"CRITICAL": "red", "HIGH": "orange3", "MEDIUM": "yellow", "LOW": "blue"}

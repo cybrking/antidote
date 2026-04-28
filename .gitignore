@@ -7,3 +7,4 @@ dist/
 findings.json
 report.md
 .mcp-scan-cache.json
+report.html

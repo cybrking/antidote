@@ -7,7 +7,7 @@ from .discovery import discover
 from .parser import fetch_all_tools
 from .graph import build_graph, get_reachable_tools
 from .analyzer import analyze_tool, analyze_propagation
-from .reporter import print_findings, write_json, write_markdown
+from .reporter import print_findings, write_json, write_markdown, write_html
 from .cache import load_cache, save_cache, get_cached_finding, cache_finding, is_cached
 
 
@@ -66,7 +66,8 @@ async def _run() -> None:
     print_findings(findings, paths)
     write_json(findings, paths, Path("findings.json"))
     write_markdown(findings, paths, Path("report.md"))
-    console.print("\n[green]Wrote findings.json and report.md[/green]")
+    write_html(findings, paths, tools, Path("report.html"))
+    console.print("\n[green]Wrote findings.json, report.md, report.html[/green]")
 
 
 if __name__ == "__main__":
