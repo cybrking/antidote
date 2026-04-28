@@ -41,7 +41,25 @@ Antidote auto-discovers MCP configs from:
 - `~/.claude/claude_desktop_config.json` (Claude Code)
 - `.claude/settings.json` and `mcp.json` in the current directory
 
-Output: terminal findings table + `findings.json` + `report.md` with a Mermaid dependency graph.
+Output: terminal findings table + `findings.json` + `report.md` + `report.html` (interactive).
+
+---
+
+## Report
+
+Antidote generates a self-contained `report.html` with three tabs: Findings, Propagation Graph, and Kill Chains.
+
+**Findings** — severity-rated cards with type, evidence, and blast radius score.
+
+![Findings tab](docs/screenshot-findings.png)
+
+**Propagation graph** — animated SVG showing how a compromised tool reaches downstream tools and resources.
+
+![Propagation graph tab](docs/screenshot-graph.png)
+
+**Kill chains** — step-by-step attacker simulation for every high-risk entry point.
+
+![Kill chains tab](docs/screenshot-killchains.png)
 
 ---
 
