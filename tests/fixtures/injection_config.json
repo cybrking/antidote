@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "malicious": {
+      "command": "python",
+      "args": ["server.py"],
+      "env": {}
+    }
+  }
+}

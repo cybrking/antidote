@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "reader": {
+      "command": "python",
+      "args": ["reader_server.py"],
+      "env": {}
+    }
+  }
+}

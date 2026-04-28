@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "chain-server": {
+      "command": "python",
+      "args": ["chain_server.py"],
+      "env": {}
+    }
+  }
+}
