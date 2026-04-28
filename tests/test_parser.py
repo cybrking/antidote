@@ -27,6 +27,12 @@ def test_infer_permissions_clean():
     assert _infer_permissions(schema) == []
 
 
+def test_infer_permissions_substring_match_is_intentional():
+    # "rewrite" contains "write" — substring match is expected per design
+    schema = {"properties": {"rewrite": {"type": "string"}}}
+    assert "filesystem.write" in _infer_permissions(schema)
+
+
 @pytest.mark.asyncio
 async def test_fetch_all_tools_server_offline():
     server = MCPServer(

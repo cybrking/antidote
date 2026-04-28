@@ -23,6 +23,7 @@ def _infer_permissions(input_schema: dict) -> list[str]:
     schema_text = json.dumps(input_schema).lower()
     found: set[str] = set()
     for keyword, permission in _PERMISSION_KEYWORDS.items():
+        # Substring scan: intentional — "contains keyword" is the design contract, not exact match
         if keyword in schema_text:
             found.add(permission)
     return sorted(found)
