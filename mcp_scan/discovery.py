@@ -9,6 +9,10 @@ _CLAUDE_DESKTOP_PATHS = {
     "linux": Path.home() / ".config" / "Claude" / "claude_desktop_config.json",
 }
 
+_CLAUDE_CODE_PATHS = [
+    Path.home() / ".claude" / "claude_desktop_config.json",
+]
+
 _PROJECT_CONFIG_NAMES = [
     Path(".claude") / "settings.json",
     Path("mcp.json"),
@@ -21,6 +25,9 @@ def discover(extra_paths: list[Path] | None = None) -> list[MCPServer]:
     desktop = _CLAUDE_DESKTOP_PATHS.get(system)
     if desktop and desktop.exists():
         config_paths.append(desktop)
+    for p in _CLAUDE_CODE_PATHS:
+        if p.exists() and p not in config_paths:
+            config_paths.append(p)
     for name in _PROJECT_CONFIG_NAMES:
         p = Path.cwd() / name
         if p.exists():
