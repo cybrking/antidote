@@ -11,6 +11,7 @@ class MCPServer:
     args: list[str] = field(default_factory=list)
     env: dict[str, str] = field(default_factory=dict)
     url: str | None = None
+    trusted: bool = True
 
 
 @dataclass

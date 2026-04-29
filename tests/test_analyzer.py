@@ -70,3 +70,29 @@ def test_analyze_propagation_api_error_returns_none():
     result = analyze_propagation(client, _tool("any", "desc"), [])
     assert result is None
     assert client.messages.create.call_count == 2
+
+
+def test_analyze_tool_passes_system_prompt():
+    client = _client({"has_finding": False})
+    analyze_tool(client, _tool("t", "benign description", perms=[]))
+    kwargs = client.messages.create.call_args[1]
+    assert "system" in kwargs, "analyze_tool must pass a system= parameter to isolate analyst instructions from tool data"
+    assert len(kwargs["system"]) > 20, "system prompt must contain actual instructions"
+
+
+def test_analyze_tool_user_message_contains_only_tool_data():
+    client = _client({"has_finding": False})
+    tool = _tool("fetch", "Fetches a URL", perms=["network.outbound"])
+    analyze_tool(client, tool)
+    kwargs = client.messages.create.call_args[1]
+    user_msg = kwargs["messages"][0]["content"]
+    assert "fetch" in user_msg
+    assert "Fetches a URL" in user_msg
+    assert "security analyst" not in user_msg.lower(), "analyst persona must live in system prompt, not user message"
+
+
+def test_analyze_propagation_passes_system_prompt():
+    client = _client({"blast_radius_score": 5, "control_summary": "test", "kill_chain": []})
+    analyze_propagation(client, _tool("entry", "desc"), [_tool("down", "desc2")])
+    kwargs = client.messages.create.call_args[1]
+    assert "system" in kwargs, "analyze_propagation must pass a system= parameter"

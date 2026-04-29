@@ -168,9 +168,9 @@ def write_html(
 
 
 def _render(report_data: dict, graph_nodes: list, graph_edges: list, graph_h: int) -> str:
-    report_json = json.dumps(report_data, indent=2)
-    nodes_json = json.dumps(graph_nodes, indent=2)
-    edges_json = json.dumps(graph_edges, indent=2)
+    report_json = json.dumps(report_data, indent=2).replace('</', '<\\/')
+    nodes_json = json.dumps(graph_nodes, indent=2).replace('</', '<\\/')
+    edges_json = json.dumps(graph_edges, indent=2).replace('</', '<\\/')
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -187,9 +187,15 @@ def _render(report_data: dict, graph_nodes: list, graph_edges: list, graph_h: in
 </head>
 <body>
 <div id="root"></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
+        integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
+        integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+        integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
+        crossorigin="anonymous"></script>
 
 <script type="text/babel">
 {_TWEAKS_PANEL_JSX}
