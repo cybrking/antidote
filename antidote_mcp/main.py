@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import anthropic
 from rich.console import Console
+from rich.markup import escape as rich_escape
 from .discovery import discover
 from .parser import fetch_all_tools
 from .graph import build_graph, get_reachable_tools
@@ -12,13 +13,32 @@ from .cache import load_cache, save_cache, get_cached_finding, cache_finding, is
 
 
 def main() -> None:
-    asyncio.run(_run())
+    import argparse
+    parser = argparse.ArgumentParser(description="Antidote MCP Security Analyzer")
+    parser.add_argument("--yes", "-y", action="store_true",
+                        help="Skip confirmation prompt for project-local server commands")
+    args = parser.parse_args()
+    asyncio.run(_run(auto_confirm=args.yes))
 
 
-async def _run() -> None:
+async def _run(auto_confirm: bool = False) -> None:
     console = Console()
     console.print("[bold]MCP Security Analyzer[/bold]")
     servers = discover()
+    untrusted = [s for s in servers if not s.trusted]
+    if untrusted and not auto_confirm:
+        console.print("\n[yellow]Warning: project-local MCP servers found:[/yellow]")
+        for s in untrusted:
+            if s.transport == "stdio":
+                label = " ".join([s.command or ""] + (s.args or []))
+            else:
+                label = s.url or ""
+            console.print(f"  [dim]{rich_escape(s.name)}:[/dim] {rich_escape(label)}")
+        console.print("\nThese servers will be connected to. Run with [bold]--yes[/bold] to proceed.")
+        servers = [s for s in servers if s not in untrusted]
+        if not servers:
+            console.print("[yellow]No trusted servers to scan. Exiting.[/yellow]")
+            return
     if not servers:
         console.print("[yellow]No MCP servers found.[/yellow]")
         console.print("  Checked: ~/Library/Application Support/Claude/claude_desktop_config.json")

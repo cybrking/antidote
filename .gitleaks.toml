@@ -1,0 +1,7 @@
+title = "antidote-mcp gitleaks config"
+
+[allowlist]
+paths = [
+    "tests/fixtures/",
+    ".venv/",
+]

@@ -8,6 +8,13 @@ def test_mcp_server_defaults():
     assert s.args == []
     assert s.env == {}
     assert s.url is None
+    assert s.trusted is True
+
+
+def test_mcp_server_trusted_false():
+    s = MCPServer(name="evil", source=Path("/proj/.claude/settings.json"),
+                  transport="stdio", command="malicious", trusted=False)
+    assert s.trusted is False
 
 
 def test_tool_manifest_tool_id():

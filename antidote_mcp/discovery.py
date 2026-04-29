@@ -20,27 +20,32 @@ _PROJECT_CONFIG_NAMES = [
 
 
 def discover(extra_paths: list[Path] | None = None) -> list[MCPServer]:
-    config_paths: list[Path] = []
+    trusted_paths: list[Path] = []
+    project_paths: list[Path] = []
+
     system = platform.system().lower()
     desktop = _CLAUDE_DESKTOP_PATHS.get(system)
     if desktop and desktop.exists():
-        config_paths.append(desktop)
+        trusted_paths.append(desktop)
     for p in _CLAUDE_CODE_PATHS:
-        if p.exists() and p not in config_paths:
-            config_paths.append(p)
+        if p.exists() and p not in trusted_paths:
+            trusted_paths.append(p)
     for name in _PROJECT_CONFIG_NAMES:
         p = Path.cwd() / name
         if p.exists():
-            config_paths.append(p)
+            project_paths.append(p)
     if extra_paths:
-        config_paths.extend(p for p in extra_paths if p.exists())
+        trusted_paths.extend(p for p in extra_paths if p.exists())
+
     servers: list[MCPServer] = []
-    for path in config_paths:
-        servers.extend(_parse_config(path))
+    for path in trusted_paths:
+        servers.extend(_parse_config(path, trusted=True))
+    for path in project_paths:
+        servers.extend(_parse_config(path, trusted=False))
     return servers
 
 
-def _parse_config(path: Path) -> list[MCPServer]:
+def _parse_config(path: Path, trusted: bool = True) -> list[MCPServer]:
     try:
         data = json.loads(path.read_text())
     except (json.JSONDecodeError, OSError):
@@ -53,12 +58,14 @@ def _parse_config(path: Path) -> list[MCPServer]:
         if not isinstance(config, dict):
             continue
         if "url" in config:
-            servers.append(MCPServer(name=name, source=path, transport="http", url=config["url"]))
+            servers.append(MCPServer(name=name, source=path, transport="http",
+                                     url=config["url"], trusted=trusted))
         elif "command" in config:
             servers.append(MCPServer(
                 name=name, source=path, transport="stdio",
                 command=config["command"],
                 args=config.get("args", []),
                 env=config.get("env", {}),
+                trusted=trusted,
             ))
     return servers

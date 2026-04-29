@@ -2,13 +2,8 @@ import json
 import anthropic
 from .models import ToolManifest, ToolFinding, PropagationPath
 
-_VULN_TEMPLATE = """\
-You are a security analyst reviewing an MCP tool definition.
-
-Tool ID: {tool_id}
-Description: {description}
-Input Schema: {schema}
-Inferred Permissions: {permissions}
+_VULN_SYSTEM = """\
+You are a security analyst reviewing MCP tool definitions.
 
 Check for one of: injection_surface, permission_scope, tool_poisoning, description_anomaly.
 
@@ -19,23 +14,31 @@ MEDIUM: overly broad permission scope with no active exploit vector OR vague des
 LOW: minor anomaly, no realistic exploit path
 
 JSON only — no markdown:
-{{"has_finding": true, "severity": "CRITICAL|HIGH|MEDIUM|LOW", "vuln_type": "...", \
-"description": "one sentence", "evidence": "exact triggering text"}}
+{"has_finding": true, "severity": "CRITICAL|HIGH|MEDIUM|LOW", "vuln_type": "...", "description": "one sentence", "evidence": "exact triggering text"}
 
-If no issues: {{"has_finding": false}}"""
+If no issues: {"has_finding": false}"""
 
-_PROPAGATION_TEMPLATE = """\
+_VULN_USER_TEMPLATE = """\
+Tool ID: {tool_id}
+Description: {description}
+Input Schema: {schema}
+Inferred Permissions: {permissions}"""
+
+_PROPAGATION_SYSTEM = """\
 You are simulating an attacker who has compromised an MCP tool.
 
+What does the attacker gain? JSON only — no markdown:
+{"blast_radius_score": <1-10>, "control_summary": "plain English", "kill_chain": ["step1", "step2"]}"""
+
+_PROPAGATION_USER_TEMPLATE = """\
 Compromised: {entry_point}
 Description: {entry_description}
 Permissions: {entry_permissions}
 
 Reachable downstream tools:
-{downstream}
+{downstream}"""
 
-What does the attacker gain? JSON only — no markdown:
-{{"blast_radius_score": <1-10>, "control_summary": "plain English", "kill_chain": ["step1", "step2"]}}"""
+_VALID_SEVERITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
 
 
 def _parse_json_response(text: str) -> dict:
@@ -46,7 +49,7 @@ def _parse_json_response(text: str) -> dict:
 
 
 def _build_vuln_prompt(tool: ToolManifest) -> str:
-    return _VULN_TEMPLATE.format(
+    return _VULN_USER_TEMPLATE.format(
         tool_id=tool.tool_id,
         description=tool.description,
         schema=json.dumps(tool.input_schema, indent=2),
@@ -62,12 +65,12 @@ def analyze_tool(client: anthropic.Anthropic, tool: ToolManifest) -> ToolFinding
                 model="claude-haiku-4-5-20251001",
                 max_tokens=512,
                 temperature=0,
+                system=_VULN_SYSTEM,
                 messages=[{"role": "user", "content": prompt}],
             )
             result = _parse_json_response(response.content[0].text)
             if not result.get("has_finding"):
                 return None
-            _VALID_SEVERITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
             severity = result.get("severity", "LOW").upper()
             if severity not in _VALID_SEVERITIES:
                 severity = "LOW"
@@ -98,7 +101,7 @@ def analyze_propagation(
         f"- {t.tool_id}: {t.description[:120]} (permissions: {t.inferred_permissions})"
         for t in downstream
     ) or "None"
-    prompt = _PROPAGATION_TEMPLATE.format(
+    prompt = _PROPAGATION_USER_TEMPLATE.format(
         entry_point=entry.tool_id,
         entry_description=entry.description,
         entry_permissions=entry.inferred_permissions,
@@ -110,6 +113,7 @@ def analyze_propagation(
                 model="claude-sonnet-4-6",
                 max_tokens=512,
                 temperature=0,
+                system=_PROPAGATION_SYSTEM,
                 messages=[{"role": "user", "content": prompt}],
             )
             result = _parse_json_response(response.content[0].text)
